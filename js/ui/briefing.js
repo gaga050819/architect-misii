@@ -29,7 +29,7 @@ export function render(root, app) {
     <fieldset class="choice-group">
       <legend>Куди летимо?</legend>
       <div class="choices" data-field="target">
-        ${data.targets.map((x) => `
+        ${data.targets.filter((x) => x.id !== 'interstellar').map((x) => `
           <div class="choice-wrap"><button type="button" class="choice big" data-id="${esc(x.id)}" aria-pressed="${build.target === x.id}">
             <span class="choice-art">${thumbHtml('target', x, app.data)}</span>
             <span class="choice-name">${t(x.name)}</span>

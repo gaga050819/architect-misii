@@ -1623,7 +1623,7 @@ dialog::backdrop { background: rgb(10 15 30 / .55); }
     <fieldset class="choice-group">
       <legend>\u041A\u0443\u0434\u0438 \u043B\u0435\u0442\u0438\u043C\u043E?</legend>
       <div class="choices" data-field="target">
-        ${data.targets.map((x) => `
+        ${data.targets.filter((x) => x.id !== "interstellar").map((x) => `
           <div class="choice-wrap"><button type="button" class="choice big" data-id="${esc(x.id)}" aria-pressed="${build.target === x.id}">
             <span class="choice-art">${thumbHtml("target", x, app2.data)}</span>
             <span class="choice-name">${t(x.name)}</span>
