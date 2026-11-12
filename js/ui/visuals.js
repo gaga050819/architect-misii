@@ -128,9 +128,9 @@ export function orbitSvg(target, dayFromArrival = 0) {
     <line class="radio-beam" x1="${ex}" y1="${ey}" x2="${tx}" y2="${ty}" stroke="${conj ? 'var(--bad)' : 'var(--data)'}" stroke-width="1.5" stroke-dasharray="4 3"/>
     <circle cx="${ex}" cy="${ey}" r="6" fill="#4a86d8"/>
     <circle cx="${tx}" cy="${ty}" r="6" fill="${v.base}"/>
-    <text x="${ex}" y="${ey - 10}" text-anchor="middle" font-size="11" fill="var(--ink)">Земля</text>
+    <text x="${ex}" y="${ey < 28 ? ey + 18 : ey - 10}" text-anchor="middle" font-size="11" fill="var(--ink)">Земля</text>
     ${notToScale ? `<text x="4" y="12" font-size="10" fill="var(--muted)">Орбіта Землі не в масштабі</text>` : ''}
-    <text x="${tx}" y="${ty - 10}" text-anchor="middle" font-size="11" fill="var(--ink)">${esc(tr(target.name))}</text>
+    <text x="${tx}" y="${ty < 28 ? ty + 18 : ty - 10}" text-anchor="middle" font-size="11" fill="var(--ink)">${esc(tr(target.name))}</text>
     <text x="${cx}" y="${H - 4}" text-anchor="middle" font-size="11" fill="${conj ? 'var(--bad)' : 'var(--muted)'}">${conj ? 'Сонце між Землею і ціллю' : `До Землі ${fmt(dist, 2)} а.о. · сигнал ${fmt(dist * 8.32, 0)} хв`}</text>
   </svg>`;
 }

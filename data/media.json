@@ -14,10 +14,11 @@
       "target": "mars",
       "platform_type": "lander",
       "file": "img/mars_lander.jpg",
-      "caption": "Поверхня Марса біля посадкової станції",
+      "caption": "InSight на поверхні Марса (реальне фото)",
       "credit": "NASA/JPL-Caltech",
-      "search": "https://images.nasa.gov/search?q=InSight%20lander",
-      "query": "InSight lander"
+      "nasa_id": "PIA22876",
+      "search": "https://images.nasa.gov/details/PIA22876",
+      "query": "InSight First Selfie on Mars"
     },
     {
       "target": "mars",
