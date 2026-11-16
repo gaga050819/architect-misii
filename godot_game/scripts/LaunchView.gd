@@ -19,11 +19,11 @@ var shake_intensity: float = 0.0
 var umbilical_angle: float = 0.0
 var downrange_km: float = 0.0
 var stars: Array = []
-var current_local_center_y: float = -132.0
+var current_local_center_y: float = -75.0
 
 func _ready() -> void:
-	initial_rocket_pos = rocket_visual.position
-	current_local_center_y = -132.0
+	update_pad_alignment()
+	current_local_center_y = -75.0
 	btn_start.pressed.connect(_on_start_pressed)
 	btn_next.pressed.connect(_on_next_pressed)
 	btn_next.visible = false
@@ -36,10 +36,20 @@ func _ready() -> void:
 	for i in range(70):
 		stars.append(Vector2(randf_range(20.0, 1260.0), randf_range(10.0, 400.0)))
 
+func update_pad_alignment() -> void:
+	var rect = flight_area.get_viewport_rect()
+	var pad_x = rect.size.x * 0.5
+	var ground_y = rect.size.y - 75.0
+	var table_top_y = ground_y - 14.0
+	initial_rocket_pos = Vector2(pad_x, table_top_y - 8.0)
+	if not is_launching:
+		rocket_visual.position = initial_rocket_pos
+
 func _process(delta: float) -> void:
 	flight_area.queue_redraw()
 
 	if not is_launching:
+		update_pad_alignment()
 		return
 	launch_timer += delta
 
@@ -73,19 +83,22 @@ func _process(delta: float) -> void:
 		pitch_deg = smoothstep(0.0, 1.0, t_pitch) * 68.0
 	rocket_visual.rotation_degrees = pitch_deg
 
-	var target_local_y = -132.0
+	var target_local_y = -75.0
 	if rocket_visual.staging_stage >= 2:
-		target_local_y = -194.0
+		target_local_y = -135.0
 	current_local_center_y = lerp(current_local_center_y, target_local_y, delta * 2.5)
 
-	var climb_t = clamp(altitude_km / 22.0, 0.0, 1.0)
-	var desired_y = lerp(428.0, 315.0, smoothstep(0.0, 1.0, climb_t))
+	var climb_t = clamp(altitude_km / 25.0, 0.0, 1.0)
+	var climb_px = smoothstep(0.0, 1.0, climb_t) * 240.0
 	var downrange_t = clamp((altitude_km - 8.0) / 135.0, 0.0, 1.0)
-	var desired_x = 640.0 + smoothstep(0.0, 1.0, downrange_t) * 135.0
+	var downrange_px = smoothstep(0.0, 1.0, downrange_t) * 140.0
+
+	var desired_x = initial_rocket_pos.x + downrange_px
+	var desired_y = initial_rocket_pos.y - climb_px
 
 	var rad = deg_to_rad(pitch_deg)
 	var off_x = -current_local_center_y * sin(rad)
-	var off_y = current_local_center_y * cos(rad)
+	var off_y = current_local_center_y * (cos(rad) - 1.0)
 	var base_pos = Vector2(desired_x - off_x, desired_y - off_y)
 	var shake = Vector2(randf_range(-shake_intensity, shake_intensity), randf_range(-shake_intensity, shake_intensity))
 	rocket_visual.position = base_pos + shake
@@ -98,12 +111,19 @@ func _process(delta: float) -> void:
 	if altitude_km > 12.0 and altitude_km < 18.0:
 		lbl_status.text = "MAX-Q: Максимальний аеродинамічний опір атмосфери!"
 
-	if altitude_km > 22.0 and rocket_visual.staging_stage == 0:
+	var r_info = DataManager.get_rocket(GameState.rocket_id)
+	var has_boosters = int(r_info.get("boosters", 0)) > 0
+
+	if has_boosters and altitude_km > 24.0 and rocket_visual.staging_stage == 0:
 		rocket_visual.staging_stage = 1
 		lbl_status.text = "Відокремлення прискорювачів! Системи номінальні."
 		SoundManager.play_click()
+	elif not has_boosters and rocket_visual.staging_stage == 0 and altitude_km > 55.0:
+		rocket_visual.staging_stage = 2
+		lbl_status.text = "MECO: Головний ступінь відпрацював! Запуск двигуна 2-го ступеня."
+		SoundManager.play_click()
 
-	if altitude_km > 55.0 and rocket_visual.staging_stage == 1:
+	if has_boosters and altitude_km > 55.0 and rocket_visual.staging_stage == 1:
 		rocket_visual.staging_stage = 2
 		lbl_status.text = "MECO: Головний ступінь відпрацював! Запуск двигуна 2-го ступеня."
 		SoundManager.play_click()
@@ -116,7 +136,9 @@ func _process(delta: float) -> void:
 	if altitude_km >= 180.0:
 		is_launching = false
 		rocket_visual.thrust_power = 0.0
-		lbl_status.text = "SECO: Вихід на опорну орбіту успішний! Готовність до транс-марсіанського маневру."
+		var target_info = DataManager.get_target(GameState.target_id)
+		var t_name = DataManager.get_localized(target_info.get("name"), "цілі")
+		lbl_status.text = "SECO: Вихід на опорну орбіту успішний! Готовність до перельоту до: %s." % [t_name]
 		SoundManager.play_success()
 		btn_next.visible = true
 

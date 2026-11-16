@@ -25,7 +25,7 @@ grow_vertical = 2
 script = ExtResource("2_bg")
 
 [node name="RocketVisual" type="Node2D" parent="FlightArea"]
-position = Vector2(640, 560)
+position = Vector2(640, 623)
 script = ExtResource("3_rocket")
 
 [node name="Telemetry" type="PanelContainer" parent="."]

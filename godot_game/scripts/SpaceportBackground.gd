@@ -97,46 +97,69 @@ func _draw() -> void:
 				 Color(0.4, 0.45, 0.52, ground_alpha * 0.5), 2.0)
 
 		var pad_x = rect.size.x * 0.5
-		var gantry_x = pad_x - 58.0
-		var gantry_w = 32.0
-		var gantry_h = 260.0
+		var table_h = 14.0
+		var table_top_y = ground_y - table_h
+
+		draw_rect(Rect2(pad_x - 32.0, table_top_y, 64.0, 26.0), Color(0.08, 0.09, 0.11, ground_alpha))
+		draw_rect(Rect2(pad_x - 70.0, table_top_y, 38.0, table_h), Color(0.25, 0.28, 0.33, ground_alpha))
+		draw_rect(Rect2(pad_x + 32.0, table_top_y, 38.0, table_h), Color(0.25, 0.28, 0.33, ground_alpha))
+		draw_line(Vector2(pad_x - 70.0, table_top_y), Vector2(pad_x + 70.0, table_top_y), Color(0.50, 0.55, 0.62, ground_alpha), 2.5)
+
+		for hi in range(5):
+			var hx = pad_x - 68.0 + hi * 12.0
+			draw_line(Vector2(hx, table_top_y + 2.0), Vector2(hx + 6.0, table_top_y + table_h - 2.0), Color(0.85, 0.75, 0.15, ground_alpha * 0.8), 2.0)
+			var hx2 = pad_x + 34.0 + hi * 12.0
+			draw_line(Vector2(hx2, table_top_y + 2.0), Vector2(hx2 + 6.0, table_top_y + table_h - 2.0), Color(0.85, 0.75, 0.15, ground_alpha * 0.8), 2.0)
+
+		var r_id = GameState.rocket_id
+		var clamp_offset = 20.0
+		if r_id == "falcon_heavy":
+			clamp_offset = 42.0
+		elif r_id == "vulcan":
+			clamp_offset = 26.0
+
+		var clamp_l = PackedVector2Array([
+			Vector2(pad_x - clamp_offset - 8.0, table_top_y),
+			Vector2(pad_x - clamp_offset + 2.0, table_top_y - 18.0),
+			Vector2(pad_x - clamp_offset + 5.0, table_top_y - 18.0),
+			Vector2(pad_x - clamp_offset - 3.0, table_top_y)
+		])
+		draw_polygon(clamp_l, [Color(0.38, 0.42, 0.48, ground_alpha)])
+		var clamp_r = PackedVector2Array([
+			Vector2(pad_x + clamp_offset + 8.0, table_top_y),
+			Vector2(pad_x + clamp_offset - 2.0, table_top_y - 18.0),
+			Vector2(pad_x + clamp_offset - 5.0, table_top_y - 18.0),
+			Vector2(pad_x + clamp_offset + 3.0, table_top_y)
+		])
+		draw_polygon(clamp_r, [Color(0.38, 0.42, 0.48, ground_alpha)])
+
+		var gantry_x = pad_x - 92.0
+		var gantry_w = 34.0
+		var gantry_h = 280.0
 		var gantry_y = ground_y - gantry_h
 
-		draw_rect(Rect2(gantry_x, gantry_y, gantry_w, gantry_h), Color(0.26, 0.30, 0.36, ground_alpha))
+		draw_rect(Rect2(gantry_x, gantry_y, gantry_w, gantry_h), Color(0.24, 0.28, 0.34, ground_alpha))
 		draw_rect(Rect2(gantry_x + 1.0, gantry_y, 4.0, gantry_h), Color(0.42, 0.48, 0.56, ground_alpha * 0.4))
-		for step in range(10):
-			var sy = gantry_y + step * 26.0
-			draw_line(Vector2(gantry_x, sy), Vector2(gantry_x + gantry_w, sy + 22.0),
-					 Color(0.38, 0.43, 0.50, ground_alpha), 1.5)
-			draw_line(Vector2(gantry_x, sy + 22.0), Vector2(gantry_x + gantry_w, sy),
-					 Color(0.38, 0.43, 0.50, ground_alpha * 0.7), 1.0)
+		for step in range(11):
+			var sy = gantry_y + step * 25.0
+			draw_line(Vector2(gantry_x, sy), Vector2(gantry_x + gantry_w, sy + 22.0), Color(0.38, 0.43, 0.50, ground_alpha), 1.5)
+			draw_line(Vector2(gantry_x, sy + 22.0), Vector2(gantry_x + gantry_w, sy), Color(0.38, 0.43, 0.50, ground_alpha * 0.7), 1.0)
 
-		for fl in range(3):
-			var fl_y = gantry_y + 20.0 + fl * 85.0
-			draw_circle(Vector2(gantry_x + gantry_w - 4.0, fl_y), 4.0,
-					   Color(1.0, 0.95, 0.5, ground_alpha * 0.9))
-			draw_circle(Vector2(gantry_x + gantry_w - 4.0, fl_y), 8.0,
-					   Color(1.0, 0.9, 0.3, ground_alpha * 0.3))
+		for fl in range(4):
+			var fl_y = gantry_y + 15.0 + fl * 75.0
+			draw_circle(Vector2(gantry_x + gantry_w - 4.0, fl_y), 4.0, Color(1.0, 0.95, 0.5, ground_alpha * 0.9))
+			draw_circle(Vector2(gantry_x + gantry_w - 4.0, fl_y), 8.0, Color(1.0, 0.9, 0.3, ground_alpha * 0.3))
 
-		var arm_len = 44.0
-		var arm_y = gantry_y + 55.0
-		var arm_rad = deg_to_rad(-arm_angle)
+		var arm_y = gantry_y + 65.0
 		var arm_start = Vector2(gantry_x + gantry_w, arm_y)
-		var arm_end = arm_start + Vector2(cos(arm_rad), sin(arm_rad)) * arm_len
+		var arm_reach_x = pad_x - 14.0
+		var arm_len = arm_reach_x - (gantry_x + gantry_w)
+		var arm_rad = deg_to_rad(-arm_angle)
+		var arm_end = arm_start + Vector2(cos(arm_rad) * arm_len, sin(arm_rad) * arm_len)
 		draw_line(arm_start, arm_end, Color(0.48, 0.54, 0.62, ground_alpha), 5.0)
-		draw_line(arm_start, arm_end, Color(0.65, 0.72, 0.80, ground_alpha * 0.5), 2.0)
+		draw_line(arm_start, arm_end, Color(0.68, 0.75, 0.84, ground_alpha * 0.6), 2.0)
 		var hyd_mid = arm_start.lerp(arm_end, 0.5)
 		draw_line(hyd_mid, hyd_mid + Vector2(0, 12.0), Color(0.38, 0.43, 0.50, ground_alpha), 3.0)
-
-		var pad_w = 100.0
-		draw_rect(Rect2(pad_x - pad_w * 0.5, ground_y, pad_w, 12.0), Color(0.22, 0.24, 0.28, ground_alpha))
-		for ci in range(5):
-			draw_line(Vector2(pad_x - pad_w * 0.5 + ci * 22.0, ground_y),
-					 Vector2(pad_x - pad_w * 0.5 + ci * 22.0, ground_y + 12.0),
-					 Color(0.30, 0.33, 0.38, ground_alpha * 0.5), 1.0)
-		draw_rect(Rect2(pad_x - 15.0, ground_y - 8.0, 30.0, 8.0), Color(0.18, 0.20, 0.24, ground_alpha))
-		draw_line(Vector2(pad_x, ground_y - 8.0), Vector2(pad_x, ground_y - 24.0),
-				 Color(0.4, 0.45, 0.52, ground_alpha * 0.6), 4.0)
 
 		if is_flying and alt < 10.0:
 			var steam_intensity = clamp(1.0 - alt / 10.0, 0.0, 1.0)

@@ -101,18 +101,17 @@ func get_localized(field: Variant, default_text: String = "") -> String:
 func get_image_texture(img_name: String) -> Texture2D:
 	if images_cache.has(img_name):
 		return images_cache[img_name]
-	var path_jpg = "res://assets/images/" + img_name + ".jpg"
-	var path_png = "res://assets/images/" + img_name + ".png"
-	var final_path = ""
-	if FileAccess.file_exists(path_jpg):
-		final_path = path_jpg
-	elif FileAccess.file_exists(path_png):
-		final_path = path_png
-	elif FileAccess.file_exists("res://assets/images/" + img_name):
-		final_path = "res://assets/images/" + img_name
-	if final_path != "":
-		var tex = load(final_path)
-		if tex is Texture2D:
-			images_cache[img_name] = tex
-			return tex
+	var paths = [
+		"res://assets/images/" + img_name + ".jpg",
+		"res://assets/images/" + img_name + ".png",
+		"res://assets/images/" + img_name,
+		"res://assets/icons/" + img_name + ".svg",
+		"res://assets/icons/" + img_name + ".png"
+	]
+	for p in paths:
+		if ResourceLoader.exists(p):
+			var tex = load(p)
+			if tex is Texture2D:
+				images_cache[img_name] = tex
+				return tex
 	return null
