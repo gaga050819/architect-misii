@@ -92,10 +92,10 @@ func update_category_buttons() -> void:
 			sb.set_border_width_all(1)
 			btn.add_theme_color_override("font_color", ThemeManager.accent_emerald)
 		else:
-			sb.bg_color = Color(1, 1, 1, 0.05) if not is_light else Color(0, 0, 0, 0.04)
-			sb.border_color = Color(1, 1, 1, 0.1)
+			sb.bg_color = Color(1, 1, 1, 0.05) if not is_light else Color(0.68, 0.76, 0.88, 0.35)
+			sb.border_color = Color(1, 1, 1, 0.1) if not is_light else Color(0.28, 0.40, 0.60, 0.50)
 			sb.set_border_width_all(1)
-			btn.add_theme_color_override("font_color", text_col * Color(1, 1, 1, 0.75))
+			btn.add_theme_color_override("font_color", text_col)
 
 		btn.add_theme_stylebox_override("normal", sb)
 
@@ -307,11 +307,7 @@ func fmt_data_rate(mbps: float) -> String:
 		return "%.0f біт/с" % (mbps * 1000000.0)
 
 func science_stars(base: float) -> String:
-	var full = int(base)
-	var txt = ""
-	for i in range(5):
-		txt += "★" if i < full else "☆"
-	return txt
+	return "[%d/5]" % int(base)
 
 func build_stat_lines(item: Dictionary, category: int) -> Array:
 	var muted = ThemeManager.get_muted_color()
@@ -528,7 +524,7 @@ func update_ui() -> void:
 	var rel = stats.get("reliability", 0.0)
 	var rel_pct = int(rel * 100.0)
 
-	var science_text = "Наука: %.0f ★  Надійн.: %d%%\nЗв'язок: %s  Канал: %d / %d Мбіт/добу" % [
+	var science_text = "Наука: %.0f  Надійн.: %d%%\nЗв'язок: %s  Канал: %d / %d Мбіт/добу" % [
 		science_val,
 		rel_pct,
 		_fmt_mbps(eff_rate),

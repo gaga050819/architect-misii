@@ -9,6 +9,12 @@ extends Control
 @onready var lbl_gforce = $Telemetry/VBox/LblGForce
 @onready var lbl_telemetry_details = $Telemetry/VBox/LblDetails
 @onready var flight_area = $FlightArea
+@onready var telemetry_panel = $Telemetry
+@onready var window_panel = $LaunchWindowPanel
+@onready var lbl_target_info = $LaunchWindowPanel/VBox/LblTargetInfo
+@onready var slider_offset = $LaunchWindowPanel/VBox/SliderOffset
+@onready var lbl_offset_val = $LaunchWindowPanel/VBox/LblOffsetVal
+@onready var lbl_window_status = $LaunchWindowPanel/VBox/LblWindowStatus
 
 var is_launching: bool = false
 var altitude_km: float = 0.0
@@ -24,6 +30,9 @@ var current_local_center_y: float = -75.0
 func _ready() -> void:
 	update_pad_alignment()
 	current_local_center_y = -75.0
+	_init_window_panel()
+	ThemeManager.theme_changed.connect(func(_v): apply_theme())
+	apply_theme()
 	btn_start.pressed.connect(_on_start_pressed)
 	btn_next.pressed.connect(_on_next_pressed)
 	btn_next.visible = false
@@ -35,6 +44,85 @@ func _ready() -> void:
 
 	for i in range(70):
 		stars.append(Vector2(randf_range(20.0, 1260.0), randf_range(10.0, 400.0)))
+
+func _init_window_panel() -> void:
+	window_panel.add_theme_stylebox_override("panel", ThemeManager.create_glass_style(16, 1))
+	var target_info = DataManager.get_target(GameState.target_id)
+	var t_name = DataManager.get_localized(target_info.get("name"), "Ціль")
+	var win = target_info.get("window", {})
+	var syn_d = int(win.get("synodic_days", 780))
+	lbl_target_info.text = "Ціль: %s | Синодичний період: %d діб" % [t_name, syn_d]
+	slider_offset.value = 0.0
+	slider_offset.value_changed.connect(_on_slider_changed)
+	_update_window_status(0)
+	var bar_ctrl = Control.new()
+	bar_ctrl.name = "WindowBarControl"
+	bar_ctrl.custom_minimum_size = Vector2(0, 44)
+	bar_ctrl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var vbox_win = window_panel.get_node("VBox")
+	vbox_win.add_child(bar_ctrl)
+	vbox_win.move_child(bar_ctrl, 2)
+	bar_ctrl.draw.connect(_on_window_bar_draw.bind(bar_ctrl))
+	bar_ctrl.set_script(null)
+
+func _draw_window_bar() -> void:
+	var ctrl = window_panel.get_node_or_null("VBox/WindowBarControl")
+	if ctrl:
+		ctrl.queue_redraw()
+
+func _on_slider_changed(val: float) -> void:
+	_update_window_status(int(val))
+	var bar = window_panel.get_node_or_null("VBox/WindowBarControl")
+	if bar:
+		bar.queue_redraw()
+
+func _update_window_status(off: int) -> void:
+	if off == 0:
+		lbl_offset_val.text = "Дата старту: Т-0 (Оптимальна дата Гомана)"
+		lbl_window_status.text = "Ідеальне вирівнювання орбіт: dV мінімальний, 100% паливного запасу."
+		lbl_window_status.modulate = ThemeManager.accent_emerald
+	elif abs(off) <= 10:
+		lbl_offset_val.text = "Дата старту: %s%d діб від оптимуму" % ["+" if off > 0 else "", off]
+		lbl_window_status.text = "Допустиме вікно (+5% dV). Невеликі втрати палива."
+		lbl_window_status.modulate = ThemeManager.accent_amber
+	else:
+		lbl_offset_val.text = "Дата старту: %s%d діб від оптимуму" % ["+" if off > 0 else "", off]
+		lbl_window_status.text = "Неоптимальне вікно (+%d%% dV). Високий ризик дефіциту палива!" % [abs(off) * 2]
+		lbl_window_status.modulate = ThemeManager.accent_red
+
+func _on_window_bar_draw(ctrl: Control) -> void:
+	var w = ctrl.size.x
+	if w < 10:
+		return
+	var h = ctrl.size.y
+	var total_days = 60
+	var cell_w = w / float(total_days)
+	var cur_off = int(slider_offset.value)
+	for d in range(total_days):
+		var day_off = d - 30
+		var cell_x = d * cell_w
+		var col: Color
+		if abs(day_off) == 0:
+			col = Color(0.18, 0.94, 0.58, 0.95)
+		elif abs(day_off) <= 5:
+			col = Color(0.18, 0.94, 0.58, 0.60)
+		elif abs(day_off) <= 10:
+			col = Color(1.0, 0.74, 0.20, 0.75)
+		elif abs(day_off) <= 20:
+			col = Color(1.0, 0.50, 0.20, 0.70)
+		else:
+			col = Color(1.0, 0.36, 0.36, 0.60)
+		ctrl.draw_rect(Rect2(cell_x + 1, 2, cell_w - 2, h - 10), col, true, 1.0)
+		ctrl.draw_rect(Rect2(cell_x + 1, 2, cell_w - 2, h - 10), Color(0, 0, 0, 0.18), false, 1.0)
+	var sel_d = cur_off + 30
+	var sel_x = sel_d * cell_w
+	ctrl.draw_rect(Rect2(sel_x, 0, cell_w, h - 2), Color(1, 1, 1, 0.95), false, 2.5)
+	ctrl.draw_rect(Rect2(sel_x + 2, 2, cell_w - 4, h - 6), Color(1, 1, 1, 0.22), true, 1.0)
+	var label_positions = [-30, -15, 0, 15, 30]
+	for lp in label_positions:
+		var lx = (lp + 30) * cell_w + cell_w * 0.5
+		var ltext = "T%+d" % lp if lp != 0 else "T-0"
+		ctrl.draw_string(ctrl.get_theme_default_font(), Vector2(lx - 12, h - 1), ltext, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(1, 1, 1, 0.75))
 
 func update_pad_alignment() -> void:
 	var rect = flight_area.get_viewport_rect()
@@ -144,6 +232,13 @@ func _process(delta: float) -> void:
 
 func _on_start_pressed() -> void:
 	SoundManager.play_click()
+	window_panel.visible = false
+	var off = int(slider_offset.value)
+	GameState.launch_window_offset = off
+	if off == 0:
+		GameState.flight_events_log.append("Старт у точне вікно Гомана: максимальна енергетична ефективність!")
+	else:
+		GameState.flight_events_log.append("Старт зі зміщенням %d діб: витрачено додаткове паливо." % [off])
 	is_launching = true
 	launch_timer = 0.0
 	btn_start.disabled = true
@@ -151,3 +246,23 @@ func _on_start_pressed() -> void:
 func _on_next_pressed() -> void:
 	SoundManager.play_click()
 	GameState.set_phase("cruise")
+
+func apply_theme() -> void:
+	telemetry_panel.add_theme_stylebox_override("panel", ThemeManager.create_glass_style(16, 1))
+	window_panel.add_theme_stylebox_override("panel", ThemeManager.create_glass_style(16, 1))
+	var text_col = ThemeManager.get_text_color()
+	var muted_col = ThemeManager.get_muted_color()
+	var cyan = ThemeManager.get_accent_cyan()
+
+	lbl_altitude.add_theme_color_override("font_color", text_col)
+	lbl_speed.add_theme_color_override("font_color", text_col)
+	lbl_gforce.add_theme_color_override("font_color", text_col)
+	lbl_telemetry_details.add_theme_color_override("font_color", muted_col)
+	lbl_target_info.add_theme_color_override("font_color", cyan)
+	lbl_offset_val.add_theme_color_override("font_color", text_col)
+	var win_title = window_panel.get_node_or_null("VBox/LblWindowTitle")
+	if win_title:
+		win_title.add_theme_color_override("font_color", cyan)
+	var bar = window_panel.get_node_or_null("VBox/WindowBarControl")
+	if bar:
+		bar.queue_redraw()
