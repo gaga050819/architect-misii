@@ -1,9 +1,11 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/LandingView.gd" id="1_landing"]
 [ext_resource type="Script" path="res://scripts/LandingTerrainVisual.gd" id="2_terrain"]
 [ext_resource type="Script" path="res://scripts/LandingCraftVisual.gd" id="3_craft"]
 [ext_resource type="Script" path="res://scripts/NavballVisual.gd" id="4_navball"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_manual_pilot.svg" id="5_ico_manual"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon_autopilot.svg" id="6_ico_auto"]
 
 [node name="LandingView" type="Control"]
 layout_mode = 3
@@ -212,11 +214,19 @@ size_flags_horizontal = 3
 layout_mode = 2
 theme_override_constants/separation = 8
 
+[node name="IcoManual" type="TextureRect" parent="ModeDialog/VBox/HBoxCards/PanelManual/VBoxM"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("5_ico_manual")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="LblManualTitle" type="Label" parent="ModeDialog/VBox/HBoxCards/PanelManual/VBoxM"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.85, 1.0, 1)
 theme_override_font_sizes/font_size = 15
-text = "🎮 РУЧНЕ ПІЛОТУВАННЯ"
+text = "РУЧНЕ ПІЛОТУВАННЯ"
 horizontal_alignment = 1
 
 [node name="LblManualDesc" type="Label" parent="ModeDialog/VBox/HBoxCards/PanelManual/VBoxM"]
@@ -240,11 +250,19 @@ size_flags_horizontal = 3
 layout_mode = 2
 theme_override_constants/separation = 8
 
+[node name="IcoAuto" type="TextureRect" parent="ModeDialog/VBox/HBoxCards/PanelAuto/VBoxA"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("6_ico_auto")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="LblAutoTitle" type="Label" parent="ModeDialog/VBox/HBoxCards/PanelAuto/VBoxA"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.92, 0.55, 1)
 theme_override_font_sizes/font_size = 15
-text = "🤖 АВТОПІЛОТ EDL"
+text = "АВТОПІЛОТ EDL"
 horizontal_alignment = 1
 
 [node name="LblAutoDesc" type="Label" parent="ModeDialog/VBox/HBoxCards/PanelAuto/VBoxA"]

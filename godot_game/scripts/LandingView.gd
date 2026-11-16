@@ -167,14 +167,14 @@ func _on_toggle_mode_pressed() -> void:
 
 func update_mode_ui() -> void:
 	if flight_mode == "manual":
-		lbl_mode_badge.text = "РЕЖИМ: 🎮 РУЧНЕ ПІЛОТУВАННЯ"
+		lbl_mode_badge.text = "РЕЖИМ: [ПІЛОТ] РУЧНЕ ПІЛОТУВАННЯ"
 		lbl_mode_badge.modulate = ThemeManager.get_accent_cyan()
 		btn_toggle_mode.text = "Автопілот EDL"
 		btn_thrust_up.disabled = false
 		btn_thrust_left.disabled = false
 		btn_thrust_right.disabled = false
 	else:
-		lbl_mode_badge.text = "РЕЖИМ: 🤖 АВТОПІЛОТ EDL"
+		lbl_mode_badge.text = "РЕЖИМ: [EDL] АВТОПІЛОТ"
 		lbl_mode_badge.modulate = ThemeManager.get_accent_emerald()
 		btn_toggle_mode.text = "Взяти керування (Ручне)"
 		btn_thrust_up.disabled = true
